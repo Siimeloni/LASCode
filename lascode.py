@@ -16,12 +16,16 @@ from collections import Counter
 in_file = sys.argv[2]
 out_file = sys.argv[3]
 mode = sys.argv[1]
+count = 'n'
 
 if len(sys.argv) == 5:
     count = sys.argv[4]
 
 # Load data
 las = pylas.read(in_file)
+
+print(las.point_format.dimension_names)
+print(np.unique(las.withheld))
 
 print("Mode: ", mode)
 print("File: ", in_file, " → ", las, "\n")
@@ -33,11 +37,12 @@ if mode == 'remap':
     # Remap Dictionary
     print("----------------------------------------------------------")
     print("All classcodes will be remapped using the following table:")
-    dict_remap = {2: 1, 8: 11, 9: 11, 10: 3, 11: 10, 20: 5, 30: 6, 31: 14, 13: 9}
+    dict_remap = {2: 1, 8: 11, 9: 19, 10: 3, 11: 10, 20: 5, 30: 6, 31: 14, 13: 9}
     for key, value in dict_remap.items():
         print(key, ' → ', value)
     print("\nAll other values will not be changed!")
     print("---------------------------------------------------------- \n")
+    las.withheld = npi.remap(las.withheld, [True], [False])
 
     # Remap function using numpy_indexed
     las.classification = npi.remap(las.classification, list(dict_remap.keys()), list(dict_remap.values()))
@@ -60,6 +65,8 @@ if count == 'y':
     for key, value in sorted(point_count.items()):
         print(key, ' : ', value)
     print()
+
+print(np.unique(las.withheld))
 
 print("Result will be written to", out_file, " → ", las)
 las.write(out_file)
